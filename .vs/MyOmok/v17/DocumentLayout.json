@@ -7,6 +7,10 @@
       "RelativeMoniker": "D:0:0:{1B2873B7-DD74-4522-9E48-39D13F8FCD95}|MyOmok\\MyOmok.vcxproj|solutionrelative:MyOmok\\IOCompletionPort.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{1B2873B7-DD74-4522-9E48-39D13F8FCD95}|MyOmok\\MyOmok.vcxproj|C:\\Work\\IOCP_Server\\MyOmok\\define.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1B2873B7-DD74-4522-9E48-39D13F8FCD95}|MyOmok\\MyOmok.vcxproj|solutionrelative:MyOmok\\define.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1B2873B7-DD74-4522-9E48-39D13F8FCD95}|MyOmok\\MyOmok.vcxproj|C:\\Work\\IOCP_Server\\MyOmok\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1B2873B7-DD74-4522-9E48-39D13F8FCD95}|MyOmok\\MyOmok.vcxproj|solutionrelative:MyOmok\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
@@ -18,8 +22,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "define.h",
+              "DocumentMoniker": "C:\\Work\\IOCP_Server\\MyOmok\\define.h",
+              "RelativeDocumentMoniker": "MyOmok\\define.h",
+              "ToolTip": "C:\\Work\\IOCP_Server\\MyOmok\\define.h",
+              "RelativeToolTip": "MyOmok\\define.h",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABkAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-08T06:52:29.134Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
@@ -32,22 +49,23 @@
               "RelativeDocumentMoniker": "MyOmok\\IOCompletionPort.h",
               "ToolTip": "C:\\Work\\IOCP_Server\\MyOmok\\IOCompletionPort.h",
               "RelativeToolTip": "MyOmok\\IOCompletionPort.h",
-              "ViewState": "AgIAAAgBAAAAAAAAAAAAABMBAAAtAAAAAAAAAA==",
+              "ViewState": "AgIAAPYAAAAAAAAAAAAAAAUBAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-09-27T06:10:24.356Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "main.cpp",
               "DocumentMoniker": "C:\\Work\\IOCP_Server\\MyOmok\\main.cpp",
               "RelativeDocumentMoniker": "MyOmok\\main.cpp",
               "ToolTip": "C:\\Work\\IOCP_Server\\MyOmok\\main.cpp",
               "RelativeToolTip": "MyOmok\\main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAcAAAAAAAAAA==",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABEAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-09-24T02:13:00.517Z"
+              "WhenOpened": "2024-09-24T02:13:00.517Z",
+              "EditorCaption": ""
             }
           ]
         }

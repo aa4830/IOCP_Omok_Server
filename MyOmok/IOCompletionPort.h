@@ -1,85 +1,25 @@
+//출처: 강정중님의 저서 '온라인 게임서버'에서
 #pragma once
 #pragma comment(lib, "ws2_32")
-#include <winsock2.h>
-#include <Ws2tcpip.h>
+
+#include "Define.h"
 #include <thread>
 #include <vector>
 
-#define MAX_SOCKBUF 1024	//패킷 크기
-#define MAX_WORKERTHREAD 4  //쓰레드 풀에 넣을 쓰레드 수
-
-enum class IOOperation
-{
-	RECV,
-	SEND
-};
-
-//WSAOVERLAPPED구조체를 확장 시켜서 필요한 정보를 더 넣었다.
-struct stOverlappedEx
-{
-	WSAOVERLAPPED m_wsaOverlapped;		//Overlapped I/O구조체
-	SOCKET		m_socketClient;			//클라이언트 소켓
-	WSABUF		m_wsaBuf;				//Overlapped I/O작업 버퍼
-	char		m_szBuf[MAX_SOCKBUF]; //데이터 버퍼
-	IOOperation m_eOperation;			//작업 동작 종류
-};
-
-//클라이언트 정보를 담기위한 구조체
-struct stClientInfo
-{
-	SOCKET			m_socketClient;			//Client와 연결되는 소켓
-	stOverlappedEx	m_stRecvOverlappedEx;	//RECV Overlapped I/O작업을 위한 변수
-	stOverlappedEx	m_stSendOverlappedEx;	//SEND Overlapped I/O작업을 위한 변수
-
-	stClientInfo() // 구조체 생성자
-	{
-		ZeroMemory(&m_stRecvOverlappedEx, sizeof(stOverlappedEx)); // 초기화
-		ZeroMemory(&m_stSendOverlappedEx, sizeof(stOverlappedEx)); // 초기화
-		m_socketClient = INVALID_SOCKET; // 초기화
-	}
-};
-
-
 class IOCompletionPort
 {
-	//클라이언트 정보 저장 구조체
-	std::vector<stClientInfo> mClientInfos;
-
-	//클라이언트의 접속을 받기위한 리슨 소켓
-	SOCKET		mListenSocket = INVALID_SOCKET;
-
-	//접속 되어있는 클라이언트 수
-	int			mClientCnt = 0;
-
-	//IO Worker 스레드
-	std::vector<std::thread> mIOWorkerThreads;
-
-	//Accept 스레드
-	std::thread	mAccepterThread;
-
-	//CompletionPort객체 핸들
-	HANDLE		mIOCPHandle = INVALID_HANDLE_VALUE;
-
-	//작업 쓰레드 동작 플래그
-	bool		mIsWorkerRun = true;
-
-	//접속 쓰레드 동작 플래그
-	bool		mIsAccepterRun = true;
-	//소켓 버퍼
-	char		mSocketBuf[1024] = { 0, };
-
 public:
-	IOCompletionPort(void) 
+	IOCompletionPort() 
 	{
+
 	}
 
-	~IOCompletionPort(void)
+	~IOCompletionPort()
 	{
-		//윈속의 사용을 끝낸다.
 		WSACleanup();
 	}
 
-	//소켓을 초기화하는 함수
+
 	bool InitSocket()
 	{
 		WSADATA wsaData;
@@ -112,7 +52,7 @@ public:
 	{
 		SOCKADDR_IN		stServerAddr;
 		stServerAddr.sin_family = AF_INET;
-		stServerAddr.sin_port = htons(nBindPort);
+		stServerAddr.sin_port = htons(nBindPort); //서버 포트를 설정한다.				
 		stServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		//위에서 지정한 서버 주소 정보와 cIOCompletionPort 소켓을 연결한다.
@@ -123,8 +63,6 @@ public:
 			return false;
 		}
 
-		//접속 요청을 받아들이기 위해 cIOCompletionPort소켓을 등록하고 
-		//접속대기큐를 5개로 설정 한다.
 		nRet = listen(mListenSocket, 5);
 		if (0 != nRet)
 		{
@@ -136,12 +74,11 @@ public:
 		return true;
 	}
 
-	//접속 요청을 수락하고 메세지를 받아서 처리하는 함수
 	bool StartServer(const UINT32 maxClientCount)
 	{
-		CreateClient(maxClientCount);
+		CreateClient(maxClientCount); // maxClientcount 수 만큼 clientinfo 구조체 벡터에 생성.
 
-
+		//CompletionPort객체 생성 요청을 한다.
 		mIOCPHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, MAX_WORKERTHREAD);
 		if (NULL == mIOCPHandle)
 		{
@@ -149,15 +86,14 @@ public:
 			return false;
 		}
 
-
 		bool bRet = CreateWokerThread();
-		if (bRet == false)
+		if (false == bRet)
 		{
 			return false;
 		}
 
 		bRet = CreateAccepterThread();
-		if (bRet == false)
+		if (false == bRet) 
 		{
 			return false;
 		}
@@ -172,15 +108,15 @@ public:
 		mIsWorkerRun = false;
 		CloseHandle(mIOCPHandle);
 
-		for (auto& th : mIOWorkerThreads)
+		for (auto& thread : mIOWorkerThreads) // WorkerThreads 배열중에서
 		{
-			if (th.joinable())
+			if (thread.joinable()) // join 가능한 상태인지 확인
 			{
-				th.join();
+				thread.join(); // thread 종료될 때까지 대기 후 리소스 해제 
 			}
 		}
 
-		//Accepter 쓰레드를 종요한다.
+		//Accepter 쓰레드를 종료한다.
 		mIsAccepterRun = false;
 		closesocket(mListenSocket);
 
@@ -237,7 +173,8 @@ private:
 		return nullptr;
 	}
 
-	//CompletionPort객체와 소켓과 CompletionKey를 연결시키는 역할을 한다.
+	//CompletionPort객체와 소켓과 CompletionKey를
+	//연결시키는 역할을 한다.
 	bool BindIOCompletionPort(stClientInfo* pClientInfo)
 	{
 		//socket과 pClientInfo를 CompletionPort객체와 연결시킨다.
@@ -262,7 +199,7 @@ private:
 
 		//Overlapped I/O을 위해 각 정보를 셋팅해 준다.
 		pClientInfo->m_stRecvOverlappedEx.m_wsaBuf.len = MAX_SOCKBUF;
-		pClientInfo->m_stRecvOverlappedEx.m_wsaBuf.buf = pClientInfo->m_stRecvOverlappedEx.m_szBuf;
+		pClientInfo->m_stRecvOverlappedEx.m_wsaBuf.buf = pClientInfo->mRecvBuf;
 		pClientInfo->m_stRecvOverlappedEx.m_eOperation = IOOperation::RECV;
 
 		int nRet = WSARecv(pClientInfo->m_socketClient,
@@ -289,12 +226,13 @@ private:
 		DWORD dwRecvNumBytes = 0;
 
 		//전송될 메세지를 복사
-		CopyMemory(pClientInfo->m_stSendOverlappedEx.m_szBuf, pMsg, nLen);
+		CopyMemory(pClientInfo->mSendBuf, pMsg, nLen);
+		pClientInfo->mSendBuf[nLen] = '\0';
 
 
 		//Overlapped I/O을 위해 각 정보를 셋팅해 준다.
 		pClientInfo->m_stSendOverlappedEx.m_wsaBuf.len = nLen;
-		pClientInfo->m_stSendOverlappedEx.m_wsaBuf.buf = pClientInfo->m_stSendOverlappedEx.m_szBuf;
+		pClientInfo->m_stSendOverlappedEx.m_wsaBuf.buf = pClientInfo->mSendBuf;
 		pClientInfo->m_stSendOverlappedEx.m_eOperation = IOOperation::SEND;
 
 		int nRet = WSASend(pClientInfo->m_socketClient,
@@ -318,25 +256,13 @@ private:
 	//그에 해당하는 처리를 하는 함수
 	void WokerThread()
 	{
-		//CompletionKey를 받을 포인터 변수
-		stClientInfo* pClientInfo = NULL;
-		//함수 호출 성공 여부
+		stClientInfo* pClientInfo = nullptr;
 		BOOL bSuccess = TRUE;
-		//Overlapped I/O작업에서 전송된 데이터 크기
 		DWORD dwIoSize = 0;
-		//I/O 작업을 위해 요청한 Overlapped 구조체를 받을 포인터
 		LPOVERLAPPED lpOverlapped = NULL;
 
 		while (mIsWorkerRun)
 		{
-			//////////////////////////////////////////////////////
-			//이 함수로 인해 쓰레드들은 WaitingThread Queue에
-			//대기 상태로 들어가게 된다.
-			//완료된 Overlapped I/O작업이 발생하면 IOCP Queue에서
-			//완료된 작업을 가져와 뒤 처리를 한다.
-			//그리고 PostQueuedCompletionStatus()함수에의해 사용자
-			//메세지가 도착되면 쓰레드를 종료한다.
-			//////////////////////////////////////////////////////
 			bSuccess = GetQueuedCompletionStatus(mIOCPHandle,
 				&dwIoSize,					// 실제로 전송된 바이트
 				(PULONG_PTR)&pClientInfo,		// CompletionKey
@@ -364,22 +290,23 @@ private:
 			}
 
 
-			stOverlappedEx* pOverlappedEx = (stOverlappedEx*)lpOverlapped;
+			auto pOverlappedEx = (stOverlappedEx*)lpOverlapped;
 
 			//Overlapped I/O Recv작업 결과 뒤 처리
 			if (IOOperation::RECV == pOverlappedEx->m_eOperation)
 			{
-				pOverlappedEx->m_szBuf[dwIoSize] = NULL;
-				printf("[수신] bytes : %d , msg : %s\n", dwIoSize, pOverlappedEx->m_szBuf);
+				pClientInfo->mRecvBuf[dwIoSize] = '\0';
+				printf("[수신] bytes : %d , msg : %s\n", dwIoSize, pClientInfo->mRecvBuf);
 
 				//클라이언트에 메세지를 에코한다.
-				SendMsg(pClientInfo, pOverlappedEx->m_szBuf, dwIoSize);
+				SendMsg(pClientInfo, pClientInfo->mRecvBuf, dwIoSize);
+
 				BindRecv(pClientInfo);
 			}
 			//Overlapped I/O Send작업 결과 뒤 처리
 			else if (IOOperation::SEND == pOverlappedEx->m_eOperation)
 			{
-				printf("[송신] bytes : %d , msg : %s\n", dwIoSize, pOverlappedEx->m_szBuf);
+				printf("[송신] bytes : %d , msg : %s\n", dwIoSize, pClientInfo->mSendBuf);
 			}
 			//예외 상황
 			else
@@ -458,4 +385,31 @@ private:
 		pClientInfo->m_socketClient = INVALID_SOCKET;
 	}
 
+
+
+	//클라이언트 정보 저장 구조체 벡터
+	std::vector<stClientInfo> mClientInfos;
+
+	//클라이언트의 접속을 받기위한 리슨 소켓
+	SOCKET		mListenSocket = INVALID_SOCKET;
+
+	//접속 되어있는 클라이언트 수
+	int			mClientCnt = 0;
+
+	//IO Worker 스레드
+	std::vector<std::thread> mIOWorkerThreads;
+
+	//Accept 스레드
+	std::thread	mAccepterThread;
+
+	//CompletionPort객체 핸들
+	HANDLE		mIOCPHandle = INVALID_HANDLE_VALUE;
+
+	//작업 쓰레드 동작 플래그
+	bool		mIsWorkerRun = true;
+
+	//접속 쓰레드 동작 플래그
+	bool		mIsAccepterRun = true;
+	//소켓 버퍼
+	char		mSocketBuf[1024] = { 0, };
 };
