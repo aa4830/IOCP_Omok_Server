@@ -143,8 +143,8 @@ private:
 		//WaingThread Queue에 대기 상태로 넣을 쓰레드들 생성 권장되는 개수 : (cpu개수 * 2) + 1 
 		for (int i = 0; i < MAX_WORKERTHREAD; i++)
 		{
-			mIOWorkerThreads.emplace_back([this]() { WokerThread(); });
-		}
+			mIOWorkerThreads.emplace_back([this]() { WokerThread(); }); // 람다 함수의 기본 구조 [외부변수를 어떻게 사용할지](매개 변수) -> 반환값(생략가능){실행할 함수}
+		}	// emplace_back 함수가 람다함수를 인자로 thread가 생성되는데, 이 thread가 WorkerThread함수를 실행시키고서 mIOWorkerThreads벡터에 추가
 
 		printf("WokerThread 시작..\n");
 		return true;
@@ -154,6 +154,7 @@ private:
 	bool CreateAccepterThread()
 	{
 		mAccepterThread = std::thread([this]() { AccepterThread(); });
+		// thread가 만들어지면 AccepterThread 함수를 실행시킴.
 
 		printf("AccepterThread 시작..\n");
 		return true;
